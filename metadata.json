@@ -1,0 +1,7 @@
+{
+  "name": "Guliston-MITSL Modern Lab",
+  "description": "A futuristic and professional scientific laboratory web application for construction materials analysis, featuring 3D elements and smooth animations.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
