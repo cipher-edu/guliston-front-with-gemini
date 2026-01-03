@@ -1,85 +1,65 @@
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { FilePlus, Send, User, Package, Shield, Info, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Send, User, Package, Shield, 
+  Loader2, CheckCircle2, AlertCircle, 
+  ClipboardCheck, Info, RefreshCcw, ArrowLeft
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { api } from '../services/api';
 
 const AddShartnoma: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [useFallbackMode, setUseFallbackMode] = useState(false);
+  
   const [formData, setFormData] = useState({
-    clientName: '',
+    client_name: '',
     phone: '',
-    productName: '',
+    product_name: '',
     quantity: '',
-    testType: 'Kimyoviy tahlil',
-    standard: '',
+    test_type: 'Kimyoviy tahlil',
     notes: ''
   });
 
-  // Telegram sozlamalari
   const TELEGRAM_BOT_TOKEN = '8054574891:AAFjRhIDw4nFxZ7m0g7PqV6rqkGASaIx00Q';
-  // Bir nechta qabul qiluvchilar (Chat ID'lar)
   const TELEGRAM_RECIPIENTS = ['1062838548', '5342507970']; 
 
-  const sendToTelegram = async (data: typeof formData) => {
-    const message = `
-<b>🚀 Yangi Ariza: Guliston-MITSL</b>
+  const sendToTelegram = async (data: any, isBackup = false) => {
+    const statusHeader = isBackup 
+      ? '🚨 <b>ZAXIRA TIZIMI: API/CORS Bloklandi</b>' 
+      : '🚀 <b>Yangi Ariza: Guliston-MITSL</b>';
+
+    const message = `${statusHeader}
 ━━━━━━━━━━━━━━━━━━
-<b>👤 Mijoz:</b> ${data.clientName}
+<b>👤 Mijoz:</b> ${data.client_name}
 <b>📞 Tel:</b> ${data.phone}
-
-<b>📦 Mahsulot:</b> ${data.productName}
+<b>📦 Mahsulot:</b> ${data.product_name}
 <b>⚖️ Miqdori:</b> ${data.quantity}
-
-<b>🔬 Sinov turi:</b> ${data.testType}
-<b>📜 Standart:</b> ${data.standard || "Ko'rsatilmadi"}
-
+<b>🔬 Sinov turi:</b> ${data.test_type}
 <b>📝 Izoh:</b> ${data.notes || 'Yo\'q'}
 ━━━━━━━━━━━━━━━━━━
-📅 Sana: ${new Date().toLocaleString('uz-UZ')}
-    `;
+📅 Sana: ${new Date().toLocaleString('uz-UZ')}`;
 
     try {
-      // Har bir ID uchun xabar yuborish
       const sendPromises = TELEGRAM_RECIPIENTS.map(chatId => 
         fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: message,
-            parse_mode: 'HTML'
+          body: JSON.stringify({ 
+            chat_id: chatId, 
+            text: message, 
+            parse_mode: 'HTML' 
           })
-        }).then(res => res.json())
+        })
       );
-
-      const results = await Promise.all(sendPromises);
-      
-      // Kamida bitta xabar muvaffaqiyatli ketganini tekshirish
-      const anySuccess = results.some(res => res.ok);
-      const allFailed = results.every(res => !res.ok);
-
-      if (allFailed) {
-        const firstError = results[0]?.description || 'Telegram API bilan bog‘lanishda xatolik';
-        if (firstError.includes('chat not found')) {
-          throw new Error("Bot hali ishga tushirilmagan. Iltimos, Telegramda botni toping va barcha mas'ullar 'Start' tugmasini bosganini tekshiring.");
-        }
-        throw new Error(firstError);
-      }
-
+      await Promise.all(sendPromises);
       return true;
-    } catch (error: any) {
-      console.error('Telegram Connection Error:', error);
-      setError(error.message);
+    } catch (e) {
       return false;
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (error) setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,213 +67,131 @@ const AddShartnoma: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    const success = await sendToTelegram(formData);
-    
-    setLoading(false);
-    if (success) {
+    const payload = {
+      client_name: String(formData.client_name).trim(),
+      phone: String(formData.phone).trim(),
+      product_name: String(formData.product_name).trim(),
+      quantity: String(formData.quantity).trim(),
+      test_type: String(formData.test_type),
+      notes: String(formData.notes).trim()
+    };
+
+    try {
+      await api.post('applications', payload);
+      await sendToTelegram(payload, false);
       setSubmitted(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err: any) {
+      const tgSuccess = await sendToTelegram(payload, true);
+      if (tgSuccess) {
+        setUseFallbackMode(true);
+        setSubmitted(true);
+      } else {
+        setError("Ulanish imkonsiz. Internetni tekshiring yoki bizga qo'ng'iroq qiling: +998 71 123 45 67");
+      }
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   if (submitted) {
     return (
-      <div className="pt-40 pb-20 min-h-screen bg-neutralLight dark:bg-[#0F172A] flex flex-col items-center px-4">
+      <div className="pt-32 pb-20 min-h-screen bg-neutralLight dark:bg-[#0F172A] flex flex-col items-center px-4">
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
+          initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="glass p-10 md:p-16 rounded-[3rem] text-center max-w-xl border border-primary/20 shadow-2xl"
+          className="glass p-8 md:p-16 rounded-[2.5rem] md:rounded-[4rem] text-center max-w-2xl border border-primary/20 shadow-2xl backdrop-blur-3xl w-full"
         >
-          <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-8">
-            <CheckCircle2 className="text-primary w-12 h-12" />
+          <div className="w-16 h-16 md:w-24 md:h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 md:mb-8">
+            <CheckCircle2 className="text-primary w-10 h-10 md:w-12 md:h-12" />
           </div>
-          <h1 className="text-4xl font-serif font-bold text-secondary dark:text-white mb-6">Muvaffaqiyatli!</h1>
-          <p className="text-xl text-neutralDark/60 dark:text-gray-400 mb-10 leading-relaxed">
-            Sizning arizangiz qabul qilindi va barcha mas'ul mutaxassislarga Telegram orqali yuborildi. 
-            Tez orada siz bilan bog‘lanamiz.
+          <h1 className="text-2xl md:text-5xl font-serif font-bold text-secondary dark:text-white mb-4 md:mb-6">Xabar yuborildi!</h1>
+          <p className="text-sm md:text-lg text-neutralDark/70 dark:text-gray-300 mb-8 md:mb-10 px-4">
+             {useFallbackMode 
+                ? "Serverda cheklovlar aniqlandi, xabaringiz zaxira kanali orqali qabul qilindi."
+                : "Arizangiz tizimga qabul qilindi. Tez orada mutaxassislarimiz bog'lanishadi."}
           </p>
-          <button 
-            onClick={() => {
-              setSubmitted(false);
-              setFormData({
-                clientName: '', phone: '', productName: '', quantity: '', 
-                testType: 'Kimyoviy tahlil', standard: '', notes: ''
-              });
-            }}
-            className="bg-primary text-white px-10 py-4 rounded-full font-bold shadow-xl hover:scale-105 transition-all active:scale-95"
-          >
-            Yangi ariza yaratish
-          </button>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button 
+              onClick={() => { setSubmitted(false); setUseFallbackMode(false); }}
+              className="bg-primary text-white px-8 py-4 rounded-full font-bold text-base shadow-xl flex items-center justify-center gap-2"
+            >
+              <RefreshCcw size={18} /> Yangi ariza
+            </button>
+            <Link to="/" className="bg-secondary text-white px-8 py-4 rounded-full font-bold text-base shadow-xl flex items-center justify-center gap-2">
+              <ArrowLeft size={18} /> Bosh sahifa
+            </Link>
+          </div>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="pt-32 pb-20 min-h-screen bg-neutralLight dark:bg-[#0F172A] relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[120px] -z-10"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-[120px] -z-10"></div>
-
+    <div className="pt-24 md:pt-32 pb-24 min-h-screen bg-neutralLight dark:bg-[#0F172A] relative overflow-hidden">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-bold text-xs uppercase tracking-widest mb-6 border border-primary/20">
-            <Send size={16} /> Raqamli Buyurtma
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10 md:mb-16">
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.2em] mb-4 border border-primary/20">
+            <ClipboardCheck size={14} /> Online Ariza Tizimi
           </div>
-          <h1 className="text-4xl md:text-5xl font-serif font-bold text-secondary dark:text-white mb-6 leading-tight">
-            Laboratoriya Sinovi uchun <span className="text-primary italic">Ariza</span>
+          <h1 className="text-3xl md:text-7xl font-serif font-bold text-secondary dark:text-white">
+            Sinov uchun <span className="text-primary italic">Ariza</span>
           </h1>
-          <p className="text-lg text-neutralDark/60 dark:text-gray-400">
-            Shaklni to‘ldiring va arizangizni darhol MITSL mutaxassislariga yo‘llang.
-          </p>
         </motion.div>
 
-        <form onSubmit={handleSubmit} className="glass p-8 md:p-12 rounded-[2.5rem] shadow-2xl space-y-12 border border-white/20">
+        <form onSubmit={handleSubmit} className="glass p-6 md:p-16 rounded-[2rem] md:rounded-[4rem] shadow-2xl space-y-8 md:space-y-12 border border-white/60 dark:border-white/5 backdrop-blur-3xl w-full">
           {error && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-6 rounded-2xl flex items-start gap-4 text-red-600 dark:text-red-400"
-            >
-              <AlertCircle className="shrink-0 mt-1" />
-              <div>
-                <p className="font-bold mb-1">Xatolik yuz berdi:</p>
-                <p className="text-sm">{error}</p>
-              </div>
-            </motion.div>
+            <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-start gap-3 text-red-600 dark:text-red-400 text-xs md:text-sm">
+              <AlertCircle className="shrink-0 w-5 h-5" />
+              <p>{error}</p>
+            </div>
           )}
 
-          <div className="grid md:grid-cols-2 gap-12">
-            <div className="space-y-6">
-              <h3 className="flex items-center gap-2 text-xl font-bold text-secondary dark:text-white border-b border-gray-100 dark:border-white/10 pb-4">
-                <User className="text-primary" size={24} /> Buyurtmachi
-              </h3>
-              <div>
-                <label className="block text-xs font-bold text-neutralDark/40 dark:text-gray-500 mb-2 uppercase tracking-widest">To'liq nomi / Tashkilot</label>
-                <input 
-                  required 
-                  name="clientName"
-                  value={formData.clientName}
-                  onChange={handleChange}
-                  type="text" 
-                  className="w-full bg-white dark:bg-white/5 dark:text-white border border-gray-100 dark:border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-inner" 
-                  placeholder="Masalan: Nazarbek Qurilish MCHJ" 
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-neutralDark/40 dark:text-gray-500 mb-2 uppercase tracking-widest">Bog'lanish uchun tel.</label>
-                <input 
-                  required 
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  type="tel" 
-                  className="w-full bg-white dark:bg-white/5 dark:text-white border border-gray-100 dark:border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-inner" 
-                  placeholder="+998 90 123 45 67" 
-                />
+          <div className="grid md:grid-cols-2 gap-6 md:gap-10">
+            <div className="space-y-4 md:space-y-8">
+              <h3 className="text-lg md:text-xl font-bold text-secondary dark:text-white flex items-center gap-3"><User size={18} className="text-primary"/> Buyurtmachi</h3>
+              <div className="space-y-4">
+                <input required name="client_name" value={formData.client_name} onChange={handleChange} type="text" className="w-full bg-white dark:bg-white/5 dark:text-white border-2 border-gray-100 dark:border-white/10 rounded-xl md:rounded-2xl px-5 py-4 text-sm md:text-base focus:border-primary focus:outline-none transition-all" placeholder="F.I.SH yoki Kompaniya" />
+                <input required name="phone" value={formData.phone} onChange={handleChange} type="tel" className="w-full bg-white dark:bg-white/5 dark:text-white border-2 border-gray-100 dark:border-white/10 rounded-xl md:rounded-2xl px-5 py-4 text-sm md:text-base focus:border-primary focus:outline-none transition-all" placeholder="+998 XX XXX XX XX" />
               </div>
             </div>
-
-            <div className="space-y-6">
-              <h3 className="flex items-center gap-2 text-xl font-bold text-secondary dark:text-white border-b border-gray-100 dark:border-white/10 pb-4">
-                <Package className="text-accent" size={24} /> Mahsulot
-              </h3>
-              <div>
-                <label className="block text-xs font-bold text-neutralDark/40 dark:text-gray-500 mb-2 uppercase tracking-widest">Material nomi</label>
-                <input 
-                  required 
-                  name="productName"
-                  value={formData.productName}
-                  onChange={handleChange}
-                  type="text" 
-                  className="w-full bg-white dark:bg-white/5 dark:text-white border border-gray-100 dark:border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-inner" 
-                  placeholder="Masalan: Beton M300" 
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-neutralDark/40 dark:text-gray-500 mb-2 uppercase tracking-widest">Hajmi yoki Miqdori</label>
-                <input 
-                  required 
-                  name="quantity"
-                  value={formData.quantity}
-                  onChange={handleChange}
-                  type="text" 
-                  className="w-full bg-white dark:bg-white/5 dark:text-white border border-gray-100 dark:border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-inner" 
-                  placeholder="15 m3 / 20 dona" 
-                />
+            
+            <div className="space-y-4 md:space-y-8">
+              <h3 className="text-lg md:text-xl font-bold text-secondary dark:text-white flex items-center gap-3"><Package size={18} className="text-accent"/> Material</h3>
+              <div className="space-y-4">
+                <input required name="product_name" value={formData.product_name} onChange={handleChange} type="text" className="w-full bg-white dark:bg-white/5 dark:text-white border-2 border-gray-100 dark:border-white/10 rounded-xl md:rounded-2xl px-5 py-4 text-sm md:text-base focus:border-accent focus:outline-none transition-all" placeholder="Beton, Armatura..." />
+                <input required name="quantity" value={formData.quantity} onChange={handleChange} type="text" className="w-full bg-white dark:bg-white/5 dark:text-white border-2 border-gray-100 dark:border-white/10 rounded-xl md:rounded-2xl px-5 py-4 text-sm md:text-base focus:border-accent focus:outline-none transition-all" placeholder="Miqdori" />
               </div>
             </div>
           </div>
 
-          <div className="space-y-8">
-            <h3 className="flex items-center gap-2 text-xl font-bold text-secondary dark:text-white border-b border-gray-100 dark:border-white/10 pb-4">
-              <Shield className="text-blue-500" size={24} /> Sinov Tafsilotlari
-            </h3>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <label className="block text-xs font-bold text-neutralDark/40 dark:text-gray-500 mb-2 uppercase tracking-widest">Tahlil yo'nalishi</label>
-                <select 
-                  name="testType"
-                  value={formData.testType}
-                  onChange={handleChange}
-                  className="w-full bg-white dark:bg-slate-800 dark:text-white border border-gray-100 dark:border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-sm cursor-pointer"
-                >
-                  <option>Kimyoviy tahlil</option>
-                  <option>Fizik-mexanik sinov</option>
-                  <option>Kompleks laboratoriya tahlili</option>
-                  <option>Sertifikatlash uchun sinov</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-neutralDark/40 dark:text-gray-500 mb-2 uppercase tracking-widest">ND (GOST / ISO)</label>
-                <input 
-                  name="standard"
-                  value={formData.standard}
-                  onChange={handleChange}
-                  type="text" 
-                  className="w-full bg-white dark:bg-white/5 dark:text-white border border-gray-100 dark:border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-inner" 
-                  placeholder="Masalan: GOST 10180" 
-                />
-              </div>
-            </div>
+          <div className="space-y-4 md:space-y-8">
+            <h3 className="text-lg md:text-xl font-bold text-secondary dark:text-white flex items-center gap-3"><Shield size={18} className="text-blue-500"/> Xizmat turi</h3>
+            <select name="test_type" value={formData.test_type} onChange={handleChange} className="w-full bg-white dark:bg-slate-800 dark:text-white border-2 border-gray-100 dark:border-white/10 rounded-xl md:rounded-2xl px-5 py-4 text-sm md:text-base focus:border-primary focus:outline-none transition-all cursor-pointer">
+              <option>Kimyoviy tahlil</option>
+              <option>Fizik-mexanik sinov</option>
+              <option>Sertifikatlash</option>
+              <option>Expertiza</option>
+            </select>
           </div>
 
           <div className="space-y-4">
-            <h3 className="flex items-center gap-2 text-xl font-bold text-secondary dark:text-white">
-              <Info className="text-primary" size={24} /> Qo‘shimcha Izoh
-            </h3>
-            <textarea 
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              className="w-full bg-white dark:bg-white/5 dark:text-white border border-gray-100 dark:border-white/10 rounded-3xl px-6 py-5 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all h-32 shadow-inner" 
-              placeholder="Namunalar holati yoki maxsus talablaringiz..."
-            ></textarea>
+             <textarea name="notes" value={formData.notes} onChange={handleChange} className="w-full bg-white dark:bg-white/5 dark:text-white border-2 border-gray-100 dark:border-white/10 rounded-2xl md:rounded-[2.5rem] px-6 py-5 h-28 md:h-36 focus:border-primary focus:outline-none transition-all resize-none text-sm md:text-base" placeholder="Izohlar..."></textarea>
+             <div className="flex gap-2 p-4 rounded-xl bg-blue-500/5 text-[10px] text-blue-500 font-bold italic">
+               <Info size={16} className="shrink-0" />
+               <span>Ma'lumotlar maxfiy kanallar orqali uzatiladi.</span>
+             </div>
           </div>
 
-          <div className="pt-6">
-            <button 
-              disabled={loading}
-              type="submit" 
-              className="w-full bg-primary text-white py-6 rounded-[2rem] font-bold text-xl shadow-2xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all flex items-center justify-center gap-4 disabled:opacity-70 disabled:cursor-not-allowed group active:scale-95"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="animate-spin" size={24} /> Yuborilmoqda...
-                </>
-              ) : (
-                <>
-                  <Send size={24} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" /> Arizani Tasdiqlash
-                </>
-              )}
-            </button>
-            <p className="text-center text-[11px] text-neutralDark/30 dark:text-gray-500 mt-6 uppercase tracking-widest font-bold">
-              Xabarnoma tizimi: {TELEGRAM_RECIPIENTS.length} ta mas'ul xabardor qilinadi
-            </p>
-          </div>
+          <button disabled={loading} type="submit" className="w-full bg-primary text-white py-5 md:py-8 rounded-2xl md:rounded-[3rem] font-bold text-lg md:text-2xl shadow-2xl flex items-center justify-center gap-3 hover:bg-secondary transition-all active:scale-95 disabled:opacity-50">
+            {loading ? <Loader2 className="animate-spin" /> : <Send size={24} />} 
+            {loading ? "Yuborilmoqda..." : "Yuborish"}
+          </button>
         </form>
       </div>
     </div>

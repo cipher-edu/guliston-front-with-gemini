@@ -63,7 +63,7 @@ const About: React.FC = () => {
 
   return (
     <div className="pt-24 pb-20 dark:bg-[#0F172A] min-h-screen overflow-hidden">
-      {/* Hero Section with Glassmorphism */}
+      {/* Hero Section */}
       <section className="relative py-20 lg:py-32">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full bg-primary/5 rounded-full blur-[120px] -z-10"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -116,7 +116,6 @@ const About: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-secondary/60 to-transparent"></div>
               </div>
               
-              {/* Floating Stat Card */}
               <motion.div 
                 animate={{ y: [0, -20, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -165,8 +164,7 @@ const About: React.FC = () => {
                 className="glass p-10 rounded-[2.5rem] border border-white/20 shadow-xl group hover:bg-white dark:hover:bg-white/5 transition-all"
               >
                 <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-8 group-hover:scale-110 transition-transform">
-                  {/* Fix: Casting the icon to React.ReactElement<any> allows cloneElement to safely apply the size prop to Lucide icons. */}
-                  {React.cloneElement(item.icon as React.ReactElement<any>, { size: 32 })}
+                  {React.cloneElement(item.icon as any, { size: 32 })}
                 </div>
                 <h4 className="text-2xl font-bold text-secondary dark:text-white mb-4">{item.title}</h4>
                 <p className="text-neutralDark/60 dark:text-gray-400 text-sm leading-relaxed">{item.desc}</p>
@@ -176,7 +174,7 @@ const About: React.FC = () => {
         </div>
       </section>
 
-      {/* Team / Staff Database Section */}
+      {/* Team Section */}
       <section className="py-32 bg-white dark:bg-[#0B1221]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
@@ -235,7 +233,7 @@ const About: React.FC = () => {
         </div>
       </section>
 
-      {/* Accreditation & Quality Section */}
+      {/* Accreditation Section */}
       <section className="py-32 bg-neutralLight dark:bg-[#0F172A] relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="glass p-12 md:p-20 rounded-[4rem] border border-white/20 shadow-2xl flex flex-col lg:flex-row items-center gap-20">
@@ -244,7 +242,7 @@ const About: React.FC = () => {
                 Xalqaro Standartlar va <span className="text-primary italic">Ishonch</span>
               </h3>
               <p className="text-lg text-neutralDark/60 dark:text-gray-400 mb-10 leading-relaxed">
-                Bizning laboratoriyamiz O'zAK tomonidan xalqaro ISO/IEC 17025:2019 standarti talablariga muvofiq akkreditatsiyadan o'tgan. Bu bizning sinov natijalarimiz jahon bozorida, shu jumladan Yevropa va AQSH bozorlarida tan olinishini anglatadi.
+                Bizning laboratoriyamiz O'zAK tomonidan xalqaro ISO/IEC 17025:2019 standarti talablariga muvofiq akkreditatsiyadan o'tgan. Bu bizning sinov natijalarimiz jahon bozorida tan olinishini anglatadi.
               </p>
               
               <ul className="space-y-6">
@@ -286,20 +284,19 @@ const About: React.FC = () => {
         </div>
       </section>
 
-      {/* History Timeline - Enhanced */}
+      {/* History Timeline */}
       <section className="py-32 bg-white dark:bg-[#0F172A]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-serif font-bold text-secondary dark:text-white mb-20 text-center italic">Rivojlanish Solnomasi</h2>
           <div className="relative">
-            {/* Center Line */}
             <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-gray-100 dark:bg-white/5 -translate-x-1/2 hidden md:block"></div>
             
             <div className="space-y-24">
               {[
-                { year: '2005', title: 'Poydevor', desc: 'Navoiy viloyatida qurilish materiallarini sinash bo\'yicha ixtisoslashgan ilk markaziy laboratoriyaning ochilishi.' },
-                { year: '2012', title: 'Sifat Cho\'qqisi', desc: 'Xalqaro ISO sertifikatini qo\'lga kiritish va xizmatlar ko\'lamini 2 barobar kengaytirish.' },
-                { year: '2019', title: 'Texnologik Inqilob', desc: 'Germaniya va Yaponiyadan keltirilgan eng so\'nggi tahliliy uskunalar bilan laboratoriyani to\'liq jihozlash.' },
-                { year: '2025', title: 'Raqamli Kelajak', desc: 'Sun\'iy intellektga asoslangan tahlil tizimi va masofaviy natijalar kuzatuvi xizmatini yo\'lga qo\'yish.' }
+                { year: '2005', title: 'Poydevor', desc: 'Qurilish materiallarini sinash bo\'yicha ixtisoslashgan ilk markaziy laboratoriyaning ochilishi.' },
+                { year: '2012', title: 'Sifat Cho\'qqisi', desc: 'Xalqaro ISO sertifikatini qo\'lga kiritish va xizmatlar ko\'lamini kengaytirish.' },
+                { year: '2019', title: 'Texnologik Inqilob', desc: 'Germaniya va Yaponiyadan keltirilgan eng so\'nggi tahliliy uskunalar bilan laboratoriyani jihozlash.' },
+                { year: '2025', title: 'Raqamli Kelajak', desc: 'AI asoslangan tahlil tizimi va masofaviy natijalar kuzatuvi xizmatini yo\'lga qo\'yish.' }
               ].map((step, idx) => (
                 <motion.div
                   key={idx}
@@ -311,10 +308,7 @@ const About: React.FC = () => {
                   <div className="md:w-1/2 flex justify-center">
                     <div className="text-6xl font-serif font-bold text-primary/20">{step.year}</div>
                   </div>
-                  
-                  {/* Circle on line */}
                   <div className="absolute left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-primary border-4 border-white dark:border-slate-800 shadow-xl hidden md:block z-10"></div>
-                  
                   <div className="md:w-1/2">
                     <div className="glass p-10 rounded-[2.5rem] border border-white/20 shadow-xl">
                       <h4 className="text-2xl font-bold text-secondary dark:text-white mb-4">{step.title}</h4>
@@ -328,24 +322,20 @@ const About: React.FC = () => {
         </div>
       </section>
 
-      {/* Interactive CTA */}
+      {/* CTA Section */}
       <section className="py-24 bg-primary relative overflow-hidden">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 text-white">
-          <motion.h2 
-            initial={{ scale: 0.9, opacity: 0 }}
-            whileInView={{ scale: 1, opacity: 1 }}
-            className="text-4xl md:text-6xl font-serif font-bold mb-8 italic"
-          >
+          <motion.h2 className="text-4xl md:text-6xl font-serif font-bold mb-8 italic">
             Biz bilan bog'laning va sifatni his qiling
           </motion.h2>
           <p className="text-xl opacity-90 mb-12 max-w-2xl mx-auto leading-relaxed">
             Mutaxassislarimiz sizning loyihangiz uchun eng maqbul laboratoriya sinovlari dasturini ishlab chiqishga tayyor.
           </p>
           <div className="flex flex-wrap justify-center gap-6">
-            <button className="bg-white text-primary px-12 py-5 rounded-full font-bold text-lg hover:bg-secondary hover:text-white transition-all shadow-2xl flex items-center gap-3">
+            <button className="bg-white text-primary px-12 py-5 rounded-full font-bold text-lg hover:bg-secondary hover:text-white transition-all shadow-2xl">
               Jamoaga qo'shilish
             </button>
-            <button className="border-2 border-white/30 text-white px-12 py-5 rounded-full font-bold text-lg hover:bg-white/10 transition-all flex items-center gap-3">
+            <button className="border-2 border-white/30 text-white px-12 py-5 rounded-full font-bold text-lg hover:bg-white/10 transition-all">
               Hamkorlik qilish
             </button>
           </div>

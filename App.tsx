@@ -6,11 +6,12 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import LoadingScreen from './components/LoadingScreen';
 
-// Static imports to avoid lazy loading resolution issues in the browser environment
+// Local pages
 import Home from './pages/Home';
 import About from './pages/About';
 import Services from './pages/Services';
 import Blog from './pages/Blog';
+import BlogDetail from './pages/BlogDetail';
 import Careers from './pages/Careers';
 import ProtocolDetail from './pages/ProtocolDetail';
 import AddShartnoma from './pages/AddShartnoma';
@@ -29,6 +30,7 @@ const App: React.FC = () => {
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
               <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogDetail />} />
               <Route path="/careers" element={<Careers />} />
               <Route path="/protocol/:id" element={<ProtocolDetail />} />
               <Route path="/add-shartnoma" element={<AddShartnoma />} />

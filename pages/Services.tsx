@@ -169,25 +169,25 @@ const Services: React.FC = () => {
   ];
 
   return (
-    <div className="pt-32 pb-24 min-h-screen bg-neutralLight dark:bg-[#0F172A] relative">
+    <div className="pt-24 md:pt-32 pb-24 min-h-screen bg-neutralLight dark:bg-[#0F172A] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-24"
+          className="text-center mb-12 md:mb-24"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-bold text-xs uppercase tracking-widest mb-6 border border-primary/20">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-bold text-[10px] md:text-xs uppercase tracking-widest mb-6 border border-primary/20">
             <ClipboardList size={16} /> MITSL Xizmatlar Katalogi
           </div>
-          <h1 className="text-5xl md:text-7xl font-serif font-bold text-secondary dark:text-white mb-8">
+          <h1 className="text-3xl md:text-7xl font-serif font-bold text-secondary dark:text-white mb-6 md:mb-8">
             Bizning <span className="text-primary italic">Imkoniyatlar</span>
           </h1>
-          <p className="text-xl text-neutralDark/60 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
-            Har bir tahlil ortida o‘nlab yillik ilmiy tajriba va eng zamonaviy uskunalarning aniq raqamlari turadi. Sifat – bizning asosiy mezonimiz.
+          <p className="text-base md:text-xl text-neutralDark/60 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed px-4">
+            Har bir tahlil ortida o‘nlab yillik ilmiy tajriba va eng zamonaviy uskunalarning aniq raqamlari turadi.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {serviceList.map((service, idx) => (
             <motion.div
               key={service.id}
@@ -197,185 +197,146 @@ const Services: React.FC = () => {
               transition={{ delay: idx * 0.1 }}
               viewport={{ once: true }}
               onClick={() => setSelectedService(service)}
-              className="glass p-10 rounded-[2.5rem] group hover:bg-secondary dark:hover:bg-primary/20 transition-all duration-500 cursor-pointer border border-white/20 shadow-xl hover:shadow-primary/20 relative overflow-hidden"
+              className="glass p-8 md:p-10 rounded-[2rem] md:rounded-[2.5rem] group hover:bg-secondary dark:hover:bg-primary/20 transition-all duration-500 cursor-pointer border border-white/20 shadow-xl relative overflow-hidden active:scale-95"
             >
-              <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/20 transition-all"></div>
-              
-              <div className={`w-20 h-20 ${service.bg} rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-all duration-500 group-hover:bg-white`}>
+              <div className={`w-16 h-16 md:w-20 md:h-20 ${service.bg} rounded-2xl flex items-center justify-center mb-6 md:mb-8 group-hover:scale-110 transition-all duration-500 group-hover:bg-white`}>
                 <div className={`${service.color} group-hover:text-primary transition-colors`}>
-                  {service.icon}
+                  {React.cloneElement(service.icon as any, { size: 32 })}
                 </div>
               </div>
               
-              <h3 className="text-2xl font-bold mb-4 dark:text-white group-hover:text-white transition-colors">
+              <h3 className="text-xl md:text-2xl font-bold mb-3 md:mb-4 dark:text-white group-hover:text-white transition-colors">
                 {service.title}
               </h3>
-              <p className="text-neutralDark/60 dark:text-gray-400 leading-relaxed mb-8 group-hover:text-white/80 transition-colors">
+              <p className="text-sm md:text-base text-neutralDark/60 dark:text-gray-400 leading-relaxed mb-6 md:mb-8 group-hover:text-white/80 transition-colors line-clamp-3">
                 {service.desc}
               </p>
               
-              <div className="flex items-center gap-2 font-bold text-primary group-hover:text-white transition-all">
-                Tafsilotlar <ChevronRight size={20} className="group-hover:translate-x-2 transition-transform" />
+              <div className="flex items-center gap-2 font-bold text-primary group-hover:text-white transition-all text-sm">
+                Tafsilotlar <ChevronRight size={18} className="group-hover:translate-x-2 transition-transform" />
               </div>
             </motion.div>
           ))}
         </div>
       </div>
 
-      {/* Background decoration */}
-      <div className="absolute top-1/4 left-0 w-96 h-96 bg-primary/5 rounded-full blur-[150px] -z-10"></div>
-      <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-accent/5 rounded-full blur-[150px] -z-10"></div>
-
-      {/* Detailed Service Modal */}
+      {/* Modal Section */}
       <AnimatePresence>
         {selectedService && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedService(null)}
-              className="absolute inset-0 bg-secondary/80 backdrop-blur-md"
+              className="absolute inset-0 bg-secondary/90 backdrop-blur-xl"
             />
             
             <motion.div
               layoutId={`card-${selectedService.id}`}
-              className="bg-white dark:bg-slate-900 w-full max-w-6xl max-h-[92vh] rounded-[3.5rem] shadow-2xl relative z-10 overflow-hidden flex flex-col lg:flex-row"
+              className="bg-white dark:bg-slate-900 w-full md:max-w-6xl h-full md:h-auto md:max-h-[92vh] md:rounded-[3rem] shadow-2xl relative z-10 overflow-hidden flex flex-col lg:flex-row"
             >
-              {/* Modal Left Side - Core Info & Stats */}
-              <div className="w-full lg:w-2/5 bg-neutralLight dark:bg-slate-800 p-8 md:p-12 border-r border-gray-100 dark:border-white/5 flex flex-col overflow-y-auto">
-                <div className="mb-10">
-                  <div className={`w-20 h-20 ${selectedService.bg} rounded-2xl flex items-center justify-center mb-6 shadow-inner`}>
+              {/* Left Column */}
+              <div className="w-full lg:w-2/5 bg-neutralLight dark:bg-slate-800 p-8 md:p-12 border-b lg:border-r lg:border-b-0 border-gray-100 dark:border-white/5 flex flex-col overflow-y-auto">
+                <button 
+                  onClick={() => setSelectedService(null)}
+                  className="lg:hidden absolute top-6 right-6 p-2 rounded-full bg-white/10 text-secondary dark:text-white"
+                >
+                  <X size={24} />
+                </button>
+
+                <div className="mb-8">
+                  <div className={`w-16 h-16 ${selectedService.bg} rounded-2xl flex items-center justify-center mb-6`}>
                     <div className={selectedService.color}>{selectedService.icon}</div>
                   </div>
-                  <h2 className="text-3xl md:text-4xl font-serif font-bold text-secondary dark:text-white mb-6 leading-tight">
+                  <h2 className="text-2xl md:text-4xl font-serif font-bold text-secondary dark:text-white mb-4">
                     {selectedService.title}
                   </h2>
-                  <p className="text-lg text-neutralDark/70 dark:text-gray-400 leading-relaxed">
+                  <p className="text-sm md:text-lg text-neutralDark/70 dark:text-gray-400 leading-relaxed">
                     {selectedService.longDesc}
                   </p>
                 </div>
 
-                <div className="space-y-4 mb-10">
-                  <div className="flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-white/5 shadow-sm">
-                    <Clock className="text-primary" size={24} />
-                    <div>
-                      <p className="text-[10px] uppercase font-bold text-gray-400">Sinov muddati</p>
-                      <p className="font-bold text-secondary dark:text-white">{selectedService.duration}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-white/5 shadow-sm">
-                    <BarChart3 className="text-accent" size={24} />
-                    <div>
-                      <p className="text-[10px] uppercase font-bold text-gray-400">Aniqilik darajasi</p>
-                      <p className="font-bold text-secondary dark:text-white">{selectedService.accuracy}</p>
-                    </div>
-                  </div>
+                <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 mb-8">
+                   <div className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-white/5">
+                      <Clock className="text-primary" size={20} />
+                      <div className="text-[10px] md:text-xs">
+                        <p className="font-bold text-gray-400 uppercase">Muddat</p>
+                        <p className="font-bold dark:text-white">{selectedService.duration}</p>
+                      </div>
+                   </div>
+                   <div className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-white/5">
+                      <BarChart3 className="text-accent" size={20} />
+                      <div className="text-[10px] md:text-xs">
+                        <p className="font-bold text-gray-400 uppercase">Aniqlik</p>
+                        <p className="font-bold dark:text-white">{selectedService.accuracy}</p>
+                      </div>
+                   </div>
                 </div>
 
-                <div className="mt-auto pt-6 border-t border-gray-200 dark:border-white/10">
-                  <h5 className="text-sm font-bold text-secondary dark:text-white mb-4 uppercase tracking-widest">Asosiy afzalliklari:</h5>
-                  <ul className="space-y-3">
-                    {selectedService.benefits.map((benefit, i) => (
-                      <li key={i} className="flex items-center gap-3 text-sm text-neutralDark/60 dark:text-gray-400">
-                        <Zap size={14} className="text-primary shrink-0" /> {benefit}
+                <div className="hidden lg:block">
+                  <h5 className="text-[10px] font-black text-secondary dark:text-white mb-3 uppercase tracking-widest">Afzalliklari:</h5>
+                  <ul className="space-y-2">
+                    {selectedService.benefits.map((b, i) => (
+                      <li key={i} className="flex items-center gap-2 text-xs text-neutralDark/60 dark:text-gray-400">
+                        <CheckCircle2 size={14} className="text-primary" /> {b}
                       </li>
                     ))}
                   </ul>
                 </div>
               </div>
 
-              {/* Modal Right Side - Detailed Technical Content */}
-              <div className="w-full lg:w-3/5 p-8 md:p-12 overflow-y-auto bg-white dark:bg-slate-900 relative">
+              {/* Right Column */}
+              <div className="flex-grow p-8 md:p-12 overflow-y-auto bg-white dark:bg-slate-900 relative">
                 <button 
                   onClick={() => setSelectedService(null)}
-                  className="absolute top-8 right-8 p-3 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors z-20"
+                  className="hidden lg:block absolute top-8 right-8 p-3 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
                 >
                   <X size={28} className="text-secondary dark:text-white" />
                 </button>
 
-                <div className="space-y-12">
-                  {/* Sinov turlari Table-style */}
+                <div className="space-y-10">
                   <section>
-                    <div className="flex items-center justify-between mb-6">
-                      <h4 className="flex items-center gap-2 text-xl font-bold text-secondary dark:text-white">
-                        <Microscope className="text-primary" /> Texnik sinovlar ro'yxati
-                      </h4>
-                    </div>
-                    <div className="grid gap-3">
+                    <h4 className="flex items-center gap-2 text-lg font-bold text-secondary dark:text-white mb-6">
+                      <Microscope className="text-primary" size={20} /> Texnik sinovlar
+                    </h4>
+                    <div className="space-y-3">
                       {selectedService.tests.map((test, i) => (
-                        <motion.div 
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.05 }}
-                          key={i} 
-                          className="flex items-center justify-between p-5 rounded-2xl bg-neutralLight dark:bg-white/5 border border-transparent hover:border-primary/20 transition-all group"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                              {i + 1}
-                            </div>
-                            <span className="text-secondary dark:text-gray-300 font-semibold">{test.name}</span>
-                          </div>
-                          <span className="text-[10px] font-bold bg-white dark:bg-slate-700 px-3 py-1 rounded-full text-neutralDark/40 dark:text-gray-500 border border-gray-100 dark:border-white/5">
+                        <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-neutralLight dark:bg-white/5 gap-2">
+                          <span className="text-sm font-bold text-secondary dark:text-gray-300">{test.name}</span>
+                          <span className="text-[9px] font-black bg-white dark:bg-slate-700 px-3 py-1 rounded-full text-neutralDark/40 dark:text-gray-500 uppercase">
                             {test.standard}
                           </span>
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
                   </section>
 
-                  <div className="grid md:grid-cols-2 gap-10">
-                    {/* Texnik bazamiz */}
-                    <section className="space-y-6">
-                      <h4 className="flex items-center gap-2 text-lg font-bold text-secondary dark:text-white">
-                        <Binary className="text-accent" /> Texnik baza
-                      </h4>
-                      <div className="space-y-3">
+                  <div className="grid sm:grid-cols-2 gap-8">
+                    <section>
+                      <h4 className="text-sm font-black uppercase tracking-widest text-secondary dark:text-white mb-4">Uskunalar:</h4>
+                      <ul className="space-y-2">
                         {selectedService.equipment.map((eq, i) => (
-                          <div key={i} className="flex items-center gap-3 text-sm text-neutralDark/60 dark:text-gray-400">
-                            <div className="w-1.5 h-1.5 rounded-full bg-accent"></div>
-                            {eq}
-                          </div>
+                          <li key={i} className="text-xs text-neutralDark/50 dark:text-gray-400 flex items-center gap-2">
+                            <div className="w-1 h-1 rounded-full bg-accent"></div> {eq}
+                          </li>
                         ))}
-                      </div>
+                      </ul>
                     </section>
-
-                    {/* Sertifikatlar va Akkreditatsiya */}
-                    <section className="space-y-6">
-                      <h4 className="flex items-center gap-2 text-lg font-bold text-secondary dark:text-white">
-                        <ShieldCheck className="text-blue-500" /> Sertifikatlash
-                      </h4>
-                      <div className="p-6 rounded-2xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/20">
-                        <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed mb-4 italic">
-                          Barcha sinov natijalari O'zbekiston Akkreditatsiya Markazi tomonidan tasdiqlangan maxsus bayonnomalar (Protokollar) shaklida taqdim etiladi.
-                        </p>
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-blue-800 dark:text-blue-400 uppercase">
-                          <ShieldAlert size={14} /> ISO 17025 muvofiqlik
-                        </div>
+                    <section>
+                      <h4 className="text-sm font-black uppercase tracking-widest text-secondary dark:text-white mb-4">Xalqaro:</h4>
+                      <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/20 text-xs text-blue-700 dark:text-blue-400 italic">
+                        ISO 17025 talablariga muvofiq rasmiy bayonnoma taqdim etiladi.
                       </div>
                     </section>
                   </div>
 
-                  {/* Informational Note */}
-                  <div className="flex gap-4 p-6 rounded-3xl bg-neutralLight dark:bg-white/5 border border-dashed border-gray-300 dark:border-white/10">
-                    <Info className="text-primary shrink-0" size={24} />
-                    <p className="text-xs text-neutralDark/50 dark:text-gray-400 leading-relaxed">
-                      <strong>Eslatma:</strong> Sinov muddatlari namunalar laboratoriyaga kelib tushgan va shartnoma rasmiylashtirilgan vaqtdan boshlab hisoblanadi. Namunalar soni va murakkabligiga qarab muddatlar mutaxassis bilan kelishilgan holda o'zgarishi mumkin.
-                    </p>
-                  </div>
-
-                  {/* Action Section */}
-                  <div className="pt-4">
-                    <Link 
-                      to="/add-shartnoma"
-                      className="w-full bg-primary text-white py-6 rounded-3xl font-bold text-xl shadow-2xl hover:shadow-primary/40 flex items-center justify-center gap-4 transition-all active:scale-95 group"
-                    >
-                      <Settings className="group-hover:rotate-90 transition-transform duration-500" /> 
-                      Hoziroq Ariza Berish
-                      <ArrowRight className="group-hover:translate-x-2 transition-transform" />
-                    </Link>
-                  </div>
+                  <Link 
+                    to="/add-shartnoma"
+                    className="w-full bg-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl hover:opacity-90 flex items-center justify-center gap-3 transition-all active:scale-95"
+                  >
+                    <ArrowRight size={20} /> Ariza Berish
+                  </Link>
                 </div>
               </div>
             </motion.div>
