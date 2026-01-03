@@ -1,8 +1,8 @@
 
 // @ts-nocheck
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Float, Sphere, MeshDistortMaterial, Points, PointMaterial, Environment } from '@react-three/drei';
+import { Float, Sphere, MeshDistortMaterial, Points, PointMaterial, AdaptiveDpr } from '@react-three/drei';
 import * as THREE from 'three';
 
 const TechSphere = () => {
@@ -11,11 +11,8 @@ const TechSphere = () => {
   
   useFrame((state) => {
     if (meshRef.current) {
-      // Rotate based on time
       meshRef.current.rotation.x = state.clock.getElapsedTime() * 0.15;
       meshRef.current.rotation.y = state.clock.getElapsedTime() * 0.2;
-      
-      // Tilt based on mouse
       meshRef.current.rotation.x += mouse.y * 0.2;
       meshRef.current.rotation.z += mouse.x * 0.2;
     }
@@ -26,21 +23,19 @@ const TechSphere = () => {
       <MeshDistortMaterial
         color="#00A676"
         attach="material"
-        distort={0.45}
-        speed={3}
+        distort={0.4}
+        speed={2.5}
         roughness={0.1}
         metalness={0.9}
         emissive="#00A676"
-        emissiveIntensity={0.4}
-        clearcoat={1}
-        clearcoatRoughness={0.1}
+        emissiveIntensity={0.3}
       />
     </Sphere>
   );
 };
 
 const NodeNetwork = () => {
-  const count = 700;
+  const count = 500;
   const positions = useMemo(() => {
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
@@ -60,7 +55,6 @@ const NodeNetwork = () => {
   useFrame((state) => {
     if (pointsRef.current) {
       pointsRef.current.rotation.y = state.clock.getElapsedTime() * 0.08;
-      // Slight mouse interaction for depth
       pointsRef.current.rotation.x = mouse.y * 0.1;
       pointsRef.current.rotation.z = mouse.x * 0.1;
     }
@@ -79,10 +73,10 @@ const NodeNetwork = () => {
       <PointMaterial
         transparent
         color="#FFA600"
-        size={0.1}
+        size={0.12}
         sizeAttenuation={true}
         depthWrite={false}
-        opacity={0.7}
+        opacity={0.6}
         blending={THREE.AdditiveBlending}
       />
     </Points>
@@ -99,7 +93,7 @@ const DataLines = () => {
 
   const lines = useMemo(() => {
     const temp = [];
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 6; i++) {
       const radius = 4 + Math.random() * 2;
       temp.push({
         radius,
@@ -115,7 +109,7 @@ const DataLines = () => {
       {lines.map((l, i) => (
         <mesh key={i} rotation={[Math.random(), Math.random(), 0]}>
           <ringGeometry args={[l.radius, l.radius + 0.02, 64]} />
-          <meshBasicMaterial color="#00A676" transparent opacity={0.15} side={THREE.DoubleSide} />
+          <meshBasicMaterial color="#00A676" transparent opacity={0.1} side={THREE.DoubleSide} />
         </mesh>
       ))}
     </group>
@@ -124,21 +118,21 @@ const DataLines = () => {
 
 const Potential3D: React.FC = () => {
   return (
-    <div className="w-full h-full min-h-[500px]">
-      <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 12], fov: 40 }} gl={{ alpha: true }}>
-        <ambientLight intensity={0.2} />
-        <spotLight position={[15, 20, 10]} angle={0.25} penumbra={1} intensity={2} color="#00A676" />
-        <pointLight position={[-10, -10, -10]} intensity={1.5} color="#FFA600" />
-        <pointLight position={[5, 5, 10]} intensity={1} color="#ffffff" />
-        
-        <Environment preset="night" />
-
-        <Float speed={2} rotationIntensity={0.5} floatIntensity={0.8}>
-          <TechSphere />
-          <NodeNetwork />
-          <DataLines />
-        </Float>
-      </Canvas>
+    <div className="w-full h-full relative" style={{ minHeight: '500px' }}>
+      <Suspense fallback={<div className="flex items-center justify-center h-full text-white/20">Yuklanmoqda...</div>}>
+        <Canvas dpr={[1, 2]} camera={{ position: [0, 0, 12], fov: 40 }} gl={{ alpha: true }}>
+          <AdaptiveDpr pixelated />
+          <ambientLight intensity={1} />
+          <spotLight position={[15, 20, 10]} angle={0.25} penumbra={1} intensity={2} color="#00A676" />
+          <pointLight position={[-10, -10, -10]} intensity={1.5} color="#FFA600" />
+          
+          <Float speed={2} rotationIntensity={0.5} floatIntensity={0.8}>
+            <TechSphere />
+            <NodeNetwork />
+            <DataLines />
+          </Float>
+        </Canvas>
+      </Suspense>
     </div>
   );
 };

@@ -3,14 +3,12 @@
 import React, { useRef, useMemo, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { 
-  OrbitControls, 
   PerspectiveCamera, 
   Float, 
-  Environment, 
   Sphere,
-  Points,
   PointMaterial,
-  Line
+  Line,
+  AdaptiveDpr
 } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -38,8 +36,9 @@ const DNAStrand = ({ offset = 0, color = "#00A676" }) => {
           <meshStandardMaterial 
             color={color} 
             emissive={color} 
-            emissiveIntensity={1.5} 
-            toneMapped={false}
+            emissiveIntensity={1.2} 
+            roughness={0.1}
+            metalness={0.8}
           />
         </Sphere>
       ))}
@@ -55,10 +54,9 @@ const DNABonds = () => {
   const lines = useMemo(() => {
     const list = [];
     for (let i = 0; i < count; i++) {
-      if (i % 2 === 0) { // Faqat har ikkinchi nuqtada bog'lovchi chiziq
+      if (i % 2 === 0) {
         const angle1 = (i * 0.4);
         const angle2 = (i * 0.4) + Math.PI;
-        
         const start = [Math.cos(angle1) * radius, (i - count / 2) * heightStep, Math.sin(angle1) * radius];
         const end = [Math.cos(angle2) * radius, (i - count / 2) * heightStep, Math.sin(angle2) * radius];
         list.push({ start, end });
@@ -76,7 +74,7 @@ const DNABonds = () => {
           color="#ffffff" 
           lineWidth={0.5} 
           transparent 
-          opacity={0.2} 
+          opacity={0.15} 
         />
       ))}
     </group>
@@ -84,13 +82,13 @@ const DNABonds = () => {
 };
 
 const ParticleField = () => {
-  const count = 1000;
+  const count = 500;
   const positions = useMemo(() => {
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 20;
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 20;
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 20;
+      pos[i * 3] = (Math.random() - 0.5) * 25;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 25;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 25;
     }
     return pos;
   }, []);
@@ -98,7 +96,7 @@ const ParticleField = () => {
   const pointsRef = useRef();
   useFrame((state) => {
     if (pointsRef.current) {
-      pointsRef.current.rotation.y = state.clock.getElapsedTime() * 0.05;
+      pointsRef.current.rotation.y = state.clock.getElapsedTime() * 0.03;
     }
   });
 
@@ -115,10 +113,10 @@ const ParticleField = () => {
       <PointMaterial 
         transparent 
         color="#00A676" 
-        size={0.05} 
+        size={0.08} 
         sizeAttenuation={true} 
         depthWrite={false} 
-        opacity={0.3}
+        opacity={0.4}
       />
     </points>
   );
@@ -129,7 +127,7 @@ const HelixScene = () => {
   
   useFrame((state) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.5;
+      groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.6;
     }
   });
 
@@ -145,31 +143,28 @@ const HelixScene = () => {
 const Hero3D: React.FC = () => {
   return (
     <div 
-      className="w-full h-full min-h-[450px]" 
+      className="w-full h-full relative" 
       role="img" 
-      aria-label="An interactive, rotating 3D DNA helix model representing scientific innovation and structural analysis."
+      aria-label="Interaktiv, aylanuvchi 3D DNK spiral modeli."
+      style={{ minHeight: '500px' }}
     >
-      <Suspense fallback={null}>
-        <Canvas dpr={[1, 1.5]} gl={{ antialias: true, alpha: true }}>
-          <PerspectiveCamera makeDefault position={[0, 0, 12]} fov={35} />
+      <Suspense fallback={
+        <div className="absolute inset-0 flex items-center justify-center text-primary/40 font-bold uppercase tracking-widest text-xs">
+          3D Model yuklanmoqda...
+        </div>
+      }>
+        <Canvas gl={{ antialias: true, alpha: true }} camera={{ position: [0, 0, 10], fov: 40 }}>
+          <AdaptiveDpr pixelated />
+          <ambientLight intensity={1.5} />
+          <pointLight position={[10, 10, 10]} intensity={3} color="#00A676" />
+          <pointLight position={[-10, -10, -10]} intensity={2} color="#FFA600" />
+          <spotLight position={[0, 20, 0]} intensity={1.5} angle={0.5} penumbra={1} />
           
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} intensity={1} color="#00A676" />
-          <pointLight position={[-10, -10, -10]} intensity={1} color="#FFA600" />
-          
-          <Environment preset="city" />
-          
-          <Float speed={3} rotationIntensity={0.5} floatIntensity={1}>
+          <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
             <HelixScene />
           </Float>
 
           <ParticleField />
-
-          <OrbitControls 
-            enableZoom={false} 
-            enablePan={false}
-            autoRotate={false} 
-          />
         </Canvas>
       </Suspense>
     </div>
