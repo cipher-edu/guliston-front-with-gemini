@@ -1,89 +1,80 @@
 
 const BASE_URL = 'https://api.guliston-mitsl.uz';
+const REQUEST_TIMEOUT = 15000;
 
 /**
- * URL manzillarini server talablariga muvofiq shakllantirish.
+ * URL manzilini API talablariga muvofiq normalizatsiya qiladi.
  */
 const getUrl = (endpoint: string): string => {
-  // Boshidagi va oxiridagi slashlarni olib tashlash
-  const cleaned = endpoint.replace(/^\/+|\/+$/g, '');
+  const [path, query] = endpoint.split('?');
+  // path oxiridan '/'ni olib tashlaymiz va keyin aniq bitta '/' qo'shamiz
+  const cleanPath = path.replace(/^\/+|\/+$/g, '');
+  const prefix = cleanPath.startsWith('api') ? '' : 'api/';
+  const normalizedPath = `${cleanPath}/`;
   
-  // 'api/' prefiksini tekshirish va qo'shish
-  const path = cleaned.startsWith('api') ? cleaned : `api/${cleaned}`;
-  
-  // URL ning asosiy qismi va query parametrlarni ajratib olish
-  const [basePath, query] = path.split('?');
-  
-  // Asosiy path oxirida slash bo'lishini ta'minlash (Django talabi)
-  const normalizedPath = basePath.endsWith('/') ? basePath : `${basePath}/`;
-  
-  const finalUrl = query ? `${normalizedPath}?${query}` : normalizedPath;
-  
-  return `${BASE_URL}/${finalUrl}`;
+  return `${BASE_URL}/${prefix}${normalizedPath}${query ? `?${query}` : ''}`;
 };
 
 export const api = {
-  async post(endpoint: string, data: any) {
+  async get(endpoint: string) {
     const url = getUrl(endpoint);
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const response = await fetch(url, {
+        method: 'GET',
+        signal: controller.signal,
+        headers: { 
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+      });
+      
+      clearTimeout(id);
 
+      if (!response.ok) {
+        if (response.status === 404) throw new Error('404');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || errorData.message || `HTTP Error: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error: any) {
+      clearTimeout(id);
+      if (error.name === 'AbortError') {
+        throw new Error('Soʻrov vaqti tugadi (Timeout).');
+      }
+      throw error;
+    }
+  },
+
+  async post(endpoint: string, data: any) {
+    const url = getUrl(endpoint);
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+
+    try {
       const response = await fetch(url, {
         method: 'POST',
-        mode: 'cors',
+        signal: controller.signal,
         headers: { 
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
         body: JSON.stringify(data),
-        signal: controller.signal
       });
 
-      clearTimeout(timeoutId);
+      clearTimeout(id);
 
       if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Xatolik haqida ma\'lumot yo\'q');
-        throw new Error(`Server xatosi (${response.status}): ${errorText}`);
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || errData.message || `Server xatosi: ${response.status}`);
       }
 
-      return await response.json().catch(() => ({ success: true }));
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
-        throw new Error('So\'rov vaqti tugadi.');
-      }
-      
-      if (error instanceof TypeError && error.message === 'Failed to fetch') {
-        throw new Error('CORS yoki Tarmoq xatosi: Server so\'rovni bloklamoqda.');
-      }
-      
-      throw error;
-    }
-  },
-
-  async get(endpoint: string) {
-    const url = getUrl(endpoint);
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: { 
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.status === 404) {
-        throw new Error('404');
-      }
-      
-      if (!response.ok) {
-        throw new Error(`Status: ${response.status}`);
-      }
-      
       return await response.json();
     } catch (error: any) {
-      console.error(`API Get Error [${url}]:`, error.message);
+      clearTimeout(id);
       throw error;
     }
   }

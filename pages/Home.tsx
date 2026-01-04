@@ -89,7 +89,7 @@ const Home: React.FC = () => {
               
               <motion.h1 variants={itemVariants} className="text-5xl md:text-8xl font-serif font-black text-secondary dark:text-white leading-[1] mb-8">
                 {t.hero.title_parts[0]} <br/>
-                <span className="text-primary italic font-light drop-shadow-[0_0_20px_rgba(0,166,118,0.3)]">{t.hero.title_parts[1]}</span> <br/>
+                <span className="text-primary italic font-light drop-shadow-[0_0_20px_rgba(0,166,118,0.3)]">{t.hero.title_parts[1]} {t.hero.title_parts[2]}</span> <br/>
                 {t.hero.title_parts[3]}
               </motion.h1>
 
