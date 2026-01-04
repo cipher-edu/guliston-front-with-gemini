@@ -1,8 +1,10 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from '../LanguageContext';
 
 const LoadingScreen: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-secondary">
       <motion.div
@@ -23,7 +25,7 @@ const LoadingScreen: React.FC = () => {
         transition={{ duration: 0.5, repeat: Infinity, repeatType: 'reverse' }}
         className="text-white font-medium tracking-widest uppercase"
       >
-        Yuklanmoqda...
+        {t.common.loading}
       </motion.p>
     </div>
   );

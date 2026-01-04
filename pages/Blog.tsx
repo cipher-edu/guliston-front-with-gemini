@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
+import { useTranslation } from '../LanguageContext';
 
 interface BlogPost {
   id: number;
@@ -34,6 +35,7 @@ export default function Blog() {
   const [loading, setLoading] = useState(true);
   const [isFallback, setIsFallback] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const { t, language } = useTranslation();
 
   useEffect(() => {
     const fetchBlogData = async () => {
@@ -54,10 +56,10 @@ export default function Blog() {
         setPosts([
           { 
             id: 0,
-            title: 'Qurilish materiallarida innovatsion tahlillar', 
+            title: t.blog_page.fallback_title, 
             slug: 'innovatsion-tahlillar',
-            excerpt: 'Zamonaviy laboratoriya sinovlari va ularning qurilish sifatiga ta’siri haqida batafsil.',
-            content: 'Bu yerda batafsil ilmiy tahlillar va natijalar joylashadi.',
+            excerpt: t.blog_page.fallback_excerpt,
+            content: '',
             hero_image: 'https://images.unsplash.com/photo-1518152006812-edab29b069ac?auto=format&fit=crop&q=80&w=800',
             is_published: true,
             published_at: new Date().toISOString(),
@@ -69,12 +71,12 @@ export default function Blog() {
       }
     };
     fetchBlogData();
-  }, []);
+  }, [language]);
 
   const formatDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString('uz-UZ', { day: '2-digit', month: 'long', year: 'numeric' });
+      return date.toLocaleDateString(language === 'uz' ? 'uz-UZ' : language === 'ru' ? 'ru-RU' : 'en-US', { day: '2-digit', month: 'long', year: 'numeric' });
     } catch {
       return dateStr;
     }
@@ -102,13 +104,13 @@ export default function Blog() {
           className="text-center mb-16"
         >
           <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6 border border-primary/20">
-            <Newspaper size={16} /> Markaz yangiliklari
+            <Newspaper size={16} /> {t.blog_page.badge}
           </div>
           <h1 className="text-5xl md:text-7xl font-serif font-bold text-secondary dark:text-white mb-8">
-            Ilmiy <span className="text-primary italic">Blog</span>
+            {t.blog_page.title_main} <span className="text-primary italic">{t.blog_page.title_accent}</span>
           </h1>
           <p className="text-xl text-neutralDark/50 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            Laboratoriyamizdagi eng so'nggi tadqiqotlar va sohadagi muhim yangiliklardan boxabar bo'ling.
+            {t.blog_page.subtitle}
           </p>
         </motion.div>
 
@@ -125,7 +127,7 @@ export default function Blog() {
                 type="text" 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Mavzu, mazmun yoki sana bo'yicha qidirish..." 
+                placeholder={t.blog_page.search_placeholder} 
                 className="w-full bg-neutralLight dark:bg-white/5 dark:text-white border-2 border-transparent focus:border-primary/30 rounded-[2rem] py-5 pl-16 pr-14 text-lg focus:outline-none transition-all"
               />
               {searchTerm && (
@@ -138,13 +140,13 @@ export default function Blog() {
               )}
             </div>
             <button className="hidden md:flex items-center gap-3 px-8 py-5 bg-secondary dark:bg-primary text-white rounded-[2rem] font-bold hover:opacity-90 transition-all shrink-0">
-              <Filter size={20} /> Saralash
+              <Filter size={20} /> {t.blog_page.sort}
             </button>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-between px-6 gap-4">
             <div className="text-xs font-bold text-neutralDark/40 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2">
               <Tag size={14} className="text-primary" />
-              Natijalar: <span className="text-secondary dark:text-white">{filteredPosts.length} ta maqola</span>
+              {t.blog_page.results}: <span className="text-secondary dark:text-white">{filteredPosts.length} {t.blog_page.articles}</span>
             </div>
           </div>
         </motion.div>
@@ -152,7 +154,7 @@ export default function Blog() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-32 space-y-6">
             <Loader2 className="animate-spin text-primary" size={48} />
-            <p className="text-secondary dark:text-white font-bold tracking-widest uppercase text-xs">Ma'lumotlar yuklanmoqda...</p>
+            <p className="text-secondary dark:text-white font-bold tracking-widest uppercase text-xs">{t.common.loading}</p>
           </div>
         ) : (
           <AnimatePresence mode='popLayout'>
@@ -180,7 +182,7 @@ export default function Blog() {
                         />
                         <div className="absolute top-6 left-6">
                           <span className="bg-primary/90 backdrop-blur-md px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest text-white flex items-center gap-2">
-                            <Tag size={12} /> Yangilik
+                            <Tag size={12} /> {t.blog_page.news_tag}
                           </span>
                         </div>
                       </div>
@@ -192,18 +194,18 @@ export default function Blog() {
                           </div>
                           <div className="flex items-center gap-1.5">
                             <Clock size={14} className="text-accent" />
-                            3 daqiqa
+                            3 {t.blog_page.reading_time}
                           </div>
                         </div>
                         <h3 className="text-2xl font-bold text-secondary dark:text-white mb-4 leading-tight group-hover:text-primary transition-colors line-clamp-2 min-h-[4rem]">
                           {post.title}
                         </h3>
                         <p className="text-neutralDark/60 dark:text-gray-400 mb-8 text-sm flex-grow line-clamp-3 leading-relaxed">
-                          {post.excerpt || "Batafsil ma'lumot olish uchun maqolani to'liq o'qing."}
+                          {post.excerpt || t.common.read_more}
                         </p>
                         <div className="pt-6 border-t border-gray-100 dark:border-white/5">
                           <span className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-[0.2em] group-hover:gap-4 transition-all">
-                            To'liq o'qish <ChevronRight size={18} />
+                            {t.common.read_more} <ChevronRight size={18} />
                           </span>
                         </div>
                       </div>
@@ -218,12 +220,12 @@ export default function Blog() {
                 className="py-32 flex flex-col items-center justify-center text-center"
               >
                 <FileQuestion className="text-primary/40 mb-8" size={64} />
-                <h3 className="text-2xl font-serif font-bold text-secondary dark:text-white mb-4">Afsuski, hech narsa topilmadi</h3>
+                <h3 className="text-2xl font-serif font-bold text-secondary dark:text-white mb-4">{t.blog_page.not_found_title}</h3>
                 <button 
                   onClick={() => setSearchTerm('')}
                   className="bg-primary text-white px-8 py-4 rounded-full font-bold shadow-lg hover:bg-secondary transition-all"
                 >
-                  Barcha maqolalarni ko'rish
+                  {t.blog_page.view_all}
                 </button>
               </motion.div>
             )}

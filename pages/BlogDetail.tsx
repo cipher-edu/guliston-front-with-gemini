@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { useTranslation } from '../LanguageContext';
 
 interface BlogPost {
   id: number;
@@ -30,6 +31,7 @@ interface BlogPost {
 export default function BlogDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { t, language } = useTranslation();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,19 +46,19 @@ export default function BlogDetail() {
         setPost(data);
       } catch (err: any) {
         console.error('Fetch post error:', err);
-        setError('Maqola topilmadi yoki tarmoq xatosi.');
+        setError(t.common.not_found);
       } finally {
         setLoading(false);
       }
     };
     fetchPost();
     window.scrollTo(0, 0);
-  }, [slug]);
+  }, [slug, language]);
 
   const formatDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString('uz-UZ', { day: '2-digit', month: 'long', year: 'numeric' });
+      return date.toLocaleDateString(language === 'uz' ? 'uz-UZ' : language === 'ru' ? 'ru-RU' : 'en-US', { day: '2-digit', month: 'long', year: 'numeric' });
     } catch {
       return dateStr;
     }
@@ -66,7 +68,7 @@ export default function BlogDetail() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-neutralLight dark:bg-[#0F172A] pt-20">
         <Loader2 className="animate-spin text-primary mb-4" size={48} />
-        <p className="text-secondary dark:text-white font-bold tracking-widest uppercase text-xs">Maqola yuklanmoqda...</p>
+        <p className="text-secondary dark:text-white font-bold tracking-widest uppercase text-xs">{t.common.loading}</p>
       </div>
     );
   }
@@ -76,9 +78,9 @@ export default function BlogDetail() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-neutralLight dark:bg-[#0F172A] px-4">
         <div className="glass p-12 rounded-[3rem] text-center max-w-lg border border-red-500/20 shadow-2xl">
           <AlertCircle className="text-red-500 w-16 h-16 mx-auto mb-6" />
-          <h2 className="text-2xl font-bold text-secondary dark:text-white mb-4">Kechirasiz!</h2>
+          <h2 className="text-2xl font-bold text-secondary dark:text-white mb-4">{t.common.error_title}</h2>
           <Link to="/blog" className="inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-full font-bold shadow-lg hover:bg-secondary transition-all">
-            <ChevronLeft size={20} /> Blogga qaytish
+            <ChevronLeft size={20} /> {t.common.back_to_blog}
           </Link>
         </div>
       </div>
@@ -98,7 +100,7 @@ export default function BlogDetail() {
           <div className="max-w-5xl mx-auto">
             <div className="flex flex-wrap gap-4 mb-6">
               <span className="bg-primary px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-white flex items-center gap-2">
-                <Tag size={12} /> Yangilik
+                <Tag size={12} /> {t.blog_page.news_tag}
               </span>
               <span className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-white border border-white/20">
                 <Calendar size={12} /> {formatDate(post.published_at)}
@@ -129,14 +131,14 @@ export default function BlogDetail() {
         <div className="mt-20 pt-12 border-t border-gray-100 dark:border-white/5 flex flex-wrap justify-between items-center gap-8">
           <div className="flex items-center gap-4">
             <button className="flex items-center gap-2 text-sm font-bold text-neutralDark/40 hover:text-primary transition-colors">
-              <Share2 size={18} /> Ulashish
+              <Share2 size={18} /> {t.common.share}
             </button>
           </div>
           <Link 
             to="/blog" 
             className="text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-2"
           >
-            Barcha maqolalar <ChevronLeft size={16} className="rotate-180" />
+            {t.blog_page.view_all} <ChevronLeft size={16} className="rotate-180" />
           </Link>
         </div>
       </div>
